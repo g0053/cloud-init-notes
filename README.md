@@ -144,4 +144,24 @@ runcmd:
  # Early boot environments can race systemd-tmpfiles-clean LP: #1707222.
  - mkdir /run/mydir
  - [ wget, "http://slashdot.org", -O, /run/mydir/index.html ]
- 
+ ```
+ ## API sample data payload may look like this:
+```
+{"name": "your_vm_name",
+"private_networking": true,
+"region": "DC1",
+"size": "512mb",
+"image": "ubuntu-18-04-x64",
+"user-data": "#cloud-config
+users:
+  - name: demo
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEApABUw57Esm7r0Cx4xYKnzVD6wlcGeAi4bF3s2/vVsQlwba2B/268f1sItW0+vjt6YwRTn8CQqX/A0gDP+rSVa9bXJAYd3jQjNQrtFkMpFTx03R0u7Mz/ZaQAuZCb3QIKs/qYKw7mNdhpcucHcTKOkbCB9iUVXGxS9RP3X3YvNgpycfV+5rnOq6cPd1Xar3IJ6ElgGCPeSdaZICXoIJN+rS5uxyTAxuHiSNyOaxUZkKW5XpAM72YvpLG21fv5hPYP548dV4arAdnWqv2EdQDQNmI0b/ZGLBjeJavj2e24AdG+OnKeJSpRqfGMMXpPLvibD1xtL3fskmq6LNKEU2vNeQ== gus@belomor.nl
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+runcmd:
+  - sed -i -e '/^Port/s/^.*$/Port 2278/' /etc/ssh/sshd_config
+  - sed -i -e '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+  - sed -i -e '$aAllowUsers demo' /etc/ssh/sshd_config
+  - restart ssh"}
