@@ -1,3 +1,101 @@
+### General Information about Cloud-Config
+The cloud-config format implements a declarative syntax for many common configuration items, making it easy to accomplish many tasks. It also allows you to specify arbitrary commands for anything that falls outside of the predefined declarative capabilities.
+
+This "best of both worlds" approach lets the file acts like a configuration file for common tasks, while maintaining the flexibility of a script for more complex functionality.
+
+## YAML Formatting
+The file is written using the YAML data serialization format. The YAML format was created to be easy to understand for humans and easy to parse for programs.
+
+YAML files are generally fairly intuitive to understand when reading them, but it is good to know the actual rules that govern them.
+
+Some important rules for YAML files are:
+
+- Indentation with whitespace indicates the structure and relationship of the items to one another. Items that are more indented are sub-items of the first item with a lower level of indentation above them.
+- List members can be identified by a leading dash.
+- Associative array entries are created by using a colon (:) followed by a space and the value.
+- Blocks of text are indented. To indicate that the block should be read as-is, with the formatting maintained, use the pipe character (|) before the block.
+
+```
+#cloud-config
+users:
+  - name: demo
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh-authorized-keys:
+     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2UWeC22g/ARHkXkv3Sj64E5s6DwVLMVxxLiKNvRjUDKurnZAewRC8EoytmD/Ky4/RQA8715K89RzVjc3G2J2m7DVfGjWCpfJ9fw5hf9oNscph+y5i9VcLQ6pKWrSee7rRm8Z41aZMIkF8X5Qg/QYyJ8WP1ok8qlD39j3JzUmgS1e2zJDKVKgCGves5zY7CBtJ4NxUrvR91ZFzFVXxj+sjdT/BYkndxdCKxjynxEaq2uFeI00IiNsXLrv4cf9CJIuCdbL/Op3Gq/2NFpXXW6WV7/milXFXL9RunuMJbU0197/Y0vLqhxAKB+o+7ZqV6NK5V2jb6gMpsENZPYxfJZrh gus@belomor.nl
+     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDWOOxN3Y8u8sFH026HYWdBh3vJ0InBRM9Az38KbTPoVgkVUhPB4i1a75/wJhdXfunf9/ZwoKRLz1F/LvJw9IETDZ52AZGFyuL/Z3toBQ0yAR8B5ELrtfgLGoch+iIrUMJYcUjYYEk+IAw2E5uuauKhOa09QNP8Np4Xk9zHcKCDi2S1Dqy1ePbTLmPyGLynQfdJsoiuZik4ddOmZgEGQLiU3VpXW8x3ICFydgEIXHy8+NjOyU6l7cHmYKaOnLgILdyWNv1K6QC1zmwwtZ6isQIXzzX8Gypb7vNUFzbDOlTj3aydytI0R3dUdqbdyCGoXRaMb+RNqq9mo5b13FAdZib7 hd@belomor.nl
+     runcmd:
+  - touch /test.txt
+  ```
+## User and Group Management
+```
+#cloud-config
+users:
+  - first_user_parameter
+    first_user_parameter
+
+  - second_user_parameter
+    second_user_parameter
+    second_user_parameter
+    second_user_parameter
+    
+#cloud-config
+groups:
+  - group1
+  - group2: [user1, user2]
+```
+## Change Passwords for Existing Users
+```
+#cloud-config
+chpasswd:
+  list: |
+    user1:password1
+    user2:password2
+    user3:password3
+  expire: False
+```
+
+## Write Files to the Disk with contend:
+```
+#cloud-config
+write_files:
+  - path: /test.txt
+    content: |
+      Here is a line.
+      Another line is here.
+      
+ ```
+ ## Configure resolv.conf to Use Specific DNS Servers
+ 
+ ```
+ #cloud-config
+manage-resolv-conf: true
+resolv_conf:
+  nameservers:
+    - 'first_nameserver'
+    - 'second_nameserver'
+  searchdomains:
+    - first.domain.com
+    - second.domain.com
+  domain: domain.com
+  options:
+    option1: value1
+    option2: value2
+    option3: value3
+```
+## Shutdown or Reboot the Server
+
+```
+#cloud-config
+power_state:
+  timeout: 120
+  delay: "+5"
+  message: Rebooting in five minutes. Please save your work.
+  mode: reboot
+```
+
+
 # The modules that run in the 'init' stage
 cloud_init_modules:
  - migrator
@@ -165,3 +263,26 @@ runcmd:
   - sed -i -e '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
   - sed -i -e '$aAllowUsers demo' /etc/ssh/sshd_config
   - restart ssh"}
+
+```
+## wait another command ends
+
+```
+## Create a log file
+logfile=$(mktemp)
+
+## Run your command and have it print into the log file
+## when it's finsihed.
+command1 && echo 1 > $logfile &
+
+## Wait for it. The [ ! -s $logfile ] is true while the file is 
+## empty. The -s means "check that the file is NOT empty" so ! -s
+## means the opposite, check that the file IS empty. So, since
+## the command above will print into the file as soon as it's finished
+## this loop will run as long as  the previous command si runnning.
+while [ ! -s $logfile ]; do sleep 1; done
+
+## continue
+command2
+```
+## 
